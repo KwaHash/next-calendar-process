@@ -6,9 +6,18 @@ export async function POST(request: Request) {
     const { messages } = await request.json() as { messages: Array<{ role: string; content: string }> }
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
+    const systemPrompt: OpenAI.ChatCompletionMessageParam = {
+      role: 'system',
+      content:
+        'You are a translation engine. Translate every user message into Portuguese (Português). ' +
+        'Output only the Portuguese translation of the input, with no explanations, notes, or the original text. ' +
+        'Preserve the meaning, tone, formatting, and any line breaks of the original. ' +
+        'If the input is already in Portuguese, return it unchanged.',
+    }
+
     const stream = await openai.chat.completions.create({
       model: 'gpt-4o',
-      messages: messages as OpenAI.ChatCompletionMessageParam[],
+      messages: [systemPrompt, ...(messages as OpenAI.ChatCompletionMessageParam[])],
       stream: true,
     })
 
