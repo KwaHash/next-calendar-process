@@ -4,7 +4,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className='flex'>
       <Sidebar />
-      <main className='flex flex-col w-full grow bg-[#eee]'>
+      <main className='flex min-h-screen grow ml-[250px] bg-[#eee]'>
         {children}
       </main>
     </div>
