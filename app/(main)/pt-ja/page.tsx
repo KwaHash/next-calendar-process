@@ -1,5 +1,5 @@
 import TranslatePage from '@/features/main/translate'
 
 export default function page() {
-  return <TranslatePage direction="ja-pt" />
+  return <TranslatePage direction="pt-ja" />
 }

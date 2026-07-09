@@ -1,11 +1,11 @@
 'use client'
 
 import { Thread } from '@/components/thread'
-import { TranslateRuntimeProvider } from '@/providers/translate-runtime-provider'
+import { TranslateRuntimeProvider, type Direction } from '@/providers/translate-runtime-provider'
 
-const TranslatePage = () => {
+const TranslatePage = ({ direction }: { direction: Direction }) => {
   return (
-    <TranslateRuntimeProvider>
+    <TranslateRuntimeProvider direction={direction}>
       <div className='flex w-full h-screen pr-0.5 overflow-hidden'>
         <div className='absolute inset-0 opacity-[0.04]'
           style={{
@@ -14,7 +14,7 @@ const TranslatePage = () => {
           }}
         />
         <div className='flex-1 overflow-hidden'>
-          <Thread />
+          <Thread direction={direction} />
         </div>
       </div>
     </TranslateRuntimeProvider>
