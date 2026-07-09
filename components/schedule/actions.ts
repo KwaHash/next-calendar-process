@@ -39,3 +39,46 @@ export async function saveSchedules(schedules: Schedule[]): Promise<void> {
   const { error } = await query
   if (error) throw error
 }
+
+// Translate free text via the shared /api/chat endpoint. `target` is the
+// language to translate into ('ja' = Japanese, 'pt' = Portuguese).
+export async function translateText(text: string, target: 'ja' | 'pt'): Promise<string> {
+  const res = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages: [{ role: 'user', content: text }], target }),
+  })
+  if (!res.ok) throw new Error(`翻訳に失敗しました (${res.status})`)
+
+  const reader = res.body?.getReader()
+  if (!reader) throw new Error('No response body')
+
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let result = ''
+
+  // Each NDJSON line holds the full accumulated content, so the last one wins.
+  const readLine = (line: string) => {
+    const trimmed = line.trim()
+    if (!trimmed) return
+    try {
+      const payload = JSON.parse(trimmed) as { content?: Array<{ type: string; text?: string }> }
+      const textPart = payload.content?.find((p) => p.type === 'text')
+      if (textPart?.text) result = textPart.text
+    } catch {
+      // skip malformed lines
+    }
+  }
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split('\n')
+    buffer = lines.pop() ?? ''
+    for (const line of lines) readLine(line)
+  }
+  readLine(buffer)
+
+  return result
+}

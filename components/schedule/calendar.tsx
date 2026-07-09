@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { FaPlus } from 'react-icons/fa6'
 import { MdOutlineKeyboardArrowLeft, MdOutlineKeyboardArrowRight } from 'react-icons/md'
-import { fetchSchedules, saveSchedules } from './actions'
+import { fetchSchedules, saveSchedules, translateText } from './actions'
 import Loading from '@/components/loading-indicator'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
@@ -22,6 +22,7 @@ const Calendar = () => {
   const [schedules, setSchedules] = useState<Schedule[]>([])
   const [editing, setEditing] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [translating, setTranslating] = useState(false)
 
   useEffect(() => {
     void fetchSchedules()
@@ -61,13 +62,60 @@ const Calendar = () => {
     }
   }
 
+  // Translate every schedule's content into the target language at once.
+  const translateAll = async (to: 'ja' | 'pt') => {
+    setTranslating(true)
+    try {
+      const next = await Promise.all(
+        schedules.map(async (s) => ({
+          ...s,
+          slots: await Promise.all(
+            s.slots.map(async (slot) =>
+              slot.content.trim()
+                ? { ...slot, content: await translateText(slot.content, to) }
+                : slot,
+            ),
+          ),
+        })),
+      )
+      setSchedules(next)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setTranslating(false)
+    }
+  }
+
   if (isLoading) return <Loading />
 
   return (
     <div className="mt-5 w-full bg-white p-5">
-      <p className="text-lg font-semibold">
-        {year} 年 {month} 月
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-lg font-semibold">
+          {year} 年 {month} 月
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={translating || schedules.length === 0}
+            onClick={() => translateAll('pt')}
+            className="h-8 rounded-sm px-3 text-xs"
+          >
+            日本語 → ポルトガル語
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={translating || schedules.length === 0}
+            onClick={() => translateAll('ja')}
+            className="h-8 rounded-sm px-3 text-xs"
+          >
+            ポルトガル語 → 日本語
+          </Button>
+          {translating && <span className="text-xs text-gray-500">翻訳中...</span>}
+        </div>
+      </div>
       <div className="mt-3 flex justify-between">
         <Button variant="outline" onClick={() => changeMonth(-1)} 
           className="p-5 rounded-none hover:text-m-hover-blue hover:border-m-hover-blue hover:bg-transparent transition-all duration-500"
