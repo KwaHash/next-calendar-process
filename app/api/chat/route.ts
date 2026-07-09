@@ -3,16 +3,20 @@ import OpenAI from 'openai'
 
 export async function POST(request: Request) {
   try {
-    const { messages } = await request.json() as { messages: Array<{ role: string; content: string }> }
+    const { messages, target } = await request.json() as {
+      messages: Array<{ role: string; content: string }>
+      target?: string
+    }
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
+    const language = target === 'ja' ? 'Japanese (日本語)' : 'Portuguese (Português)'
     const systemPrompt: OpenAI.ChatCompletionMessageParam = {
       role: 'system',
       content:
-        'You are a translation engine. Translate every user message into Portuguese (Português). ' +
-        'Output only the Portuguese translation of the input, with no explanations, notes, or the original text. ' +
+        `You are a translation engine. Translate every user message into ${language}. ` +
+        `Output only the ${language} translation of the input, with no explanations, notes, or the original text. ` +
         'Preserve the meaning, tone, formatting, and any line breaks of the original. ' +
-        'If the input is already in Portuguese, return it unchanged.',
+        `If the input is already in ${language}, return it unchanged.`,
     }
 
     const stream = await openai.chat.completions.create({

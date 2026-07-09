@@ -26,8 +26,24 @@ import { ToolFallback } from '@/components/tool-fallback'
 import { TooltipIconButton } from '@/components/tooltip-icon-button'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { type Direction } from '@/providers/translate-runtime-provider'
 
-export const Thread: FC = () => {
+// UI text shown in the source language the user types for each direction.
+const UI_TEXT: Record<Direction, { greeting: string; subtitle: string; placeholder: string }> = {
+  'ja-pt': {
+    greeting: 'こんにちは！',
+    subtitle: '今日はどのようにお手伝いできますか？',
+    placeholder: 'メッセージを入力してください...',
+  },
+  'pt-ja': {
+    greeting: 'Olá!',
+    subtitle: 'Como posso ajudá-lo hoje?',
+    placeholder: 'Digite sua mensagem...',
+  },
+}
+
+export const Thread: FC<{ direction: Direction }> = ({ direction }) => {
+  const text = UI_TEXT[direction]
   return (
     <ThreadPrimitive.Root
       className='aui-root aui-thread-root @container flex h-full flex-col bg-background'
@@ -40,7 +56,7 @@ export const Thread: FC = () => {
         className='aui-thread-viewport relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4 scrollbar'
       >
         <AuiIf condition={(s) => s.thread.isEmpty}>
-          <ThreadWelcome />
+          <ThreadWelcome greeting={text.greeting} subtitle={text.subtitle} />
         </AuiIf>
 
         <ThreadPrimitive.Messages
@@ -53,7 +69,7 @@ export const Thread: FC = () => {
 
         <ThreadPrimitive.ViewportFooter className='aui-thread-viewport-footer sticky bottom-0 mx-auto mt-auto flex w-full max-w-(--thread-max-width) flex-col gap-4 overflow-visible rounded-t-3xl bg-background pb-4 md:pb-6'>
           <ThreadScrollToBottom />
-          <Composer />
+          <Composer placeholder={text.placeholder} />
         </ThreadPrimitive.ViewportFooter>
       </ThreadPrimitive.Viewport>
     </ThreadPrimitive.Root>
@@ -74,16 +90,16 @@ const ThreadScrollToBottom: FC = () => {
   )
 }
 
-const ThreadWelcome: FC = () => {
+const ThreadWelcome: FC<{ greeting: string; subtitle: string }> = ({ greeting, subtitle }) => {
   return (
     <div className='aui-thread-welcome-root mx-auto my-auto flex w-full max-w-(--thread-max-width) grow flex-col'>
       <div className='aui-thread-welcome-center flex w-full grow flex-col items-center justify-center'>
         <div className='aui-thread-welcome-message flex size-full flex-col justify-center px-4 gap-4 text-center max-w-4xl mx-auto'>
           <h1 className='aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both font-semibold text-3xl duration-200'>
-            こんにちは！
+            {greeting}
           </h1>
           <p className='aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both text-muted-foreground text-base delay-75 duration-200'>
-            今日はどのようにお手伝いできますか？
+            {subtitle}
           </p>
         </div>
       </div>
@@ -124,13 +140,13 @@ const ThreadSuggestionItem: FC = () => {
   )
 }
 
-const Composer: FC = () => {
+const Composer: FC<{ placeholder: string }> = ({ placeholder }) => {
   return (
     <ComposerPrimitive.Root className='aui-composer-root relative flex w-full flex-col max-w-4xl mx-auto'>
       <ComposerPrimitive.AttachmentDropzone className='aui-composer-attachment-dropzone flex w-full flex-col rounded-lg border-2 border-input px-1 pt-2 outline-none transition-shadow has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-gray-400 data-[dragging=true]:border-ring data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50'>
         <ComposerAttachments />
         <ComposerPrimitive.Input
-          placeholder='メッセージを入力してください...'
+          placeholder={placeholder}
           className='aui-composer-input mb-1 max-h-32 min-h-4 w-full resize-none bg-transparent px-4 pt-2 pb-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-0'
           rows={1}  
           autoFocus
