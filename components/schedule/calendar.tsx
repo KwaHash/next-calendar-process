@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CgClose } from 'react-icons/cg'
 import { FaPlus } from 'react-icons/fa6'
 import { MdOutlineKeyboardArrowLeft, MdOutlineKeyboardArrowRight } from 'react-icons/md'
 import { fetchSchedules, saveSchedules } from './actions'
@@ -102,24 +101,20 @@ const Calendar = () => {
             <div key={date} className="min-h-[92px] border-b border-r border-border-gray/20 p-2">
               <p className="text-base font-semibold">{day}</p>
               {schedule ? (
-                <div className="mt-2 flex items-start">
-                  <Button
-                    variant="ghost"
-                    onClick={() => setEditing(date)}
-                    className="h-auto flex-col gap-0 rounded-[3px] bg-[#29ac6d] px-4 py-1 text-[11px] leading-tight text-white hover:bg-[#29ac6d] hover:text-white hover:opacity-90"
-                  >
-                    <span>{schedule.slots[0].start}~</span>
-                    <span>{schedule.slots[0].end}</span>
-                    {schedule.slots.length > 1 && <span>他{schedule.slots.length - 1}件</span>}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => remove(date)}
-                    className="h-auto w-auto self-end rounded-[3px] bg-m-red p-1 text-white hover:bg-m-hover-red hover:text-white"
-                  >
-                    <CgClose />
-                  </Button>
+                <div className="mt-1 flex flex-col gap-1">
+                  {schedule.slots.map((slot, i) => (
+                    <Button
+                      key={i}
+                      variant="ghost"
+                      onClick={() => setEditing(date)}
+                      className="h-auto w-full min-w-0 justify-start rounded-[3px] bg-[#29ac6d] px-1.5 py-1 text-[11px] font-normal leading-tight text-white hover:bg-[#29ac6d] hover:text-white hover:opacity-90"
+                    >
+                      <span className="min-w-0 flex-1 truncate text-left">
+                        <span className="font-semibold">{slot.start}</span>
+                        {slot.content ? ` ${slot.content}` : ` ~${slot.end}`}
+                      </span>
+                    </Button>
+                  ))}
                 </div>
               ) : (
                 <Button
@@ -153,6 +148,7 @@ const Calendar = () => {
           date={editing}
           schedule={schedules.find((s) => s.date === editing)}
           onSave={save}
+          onDelete={() => remove(editing)}
           onClose={() => setEditing(null)}
         />
       )}
@@ -164,10 +160,11 @@ interface TimeDialogProps {
   date: string
   schedule?: Schedule
   onSave: (date: string, slots: Slot[]) => void
+  onDelete: () => void
   onClose: () => void
 }
 
-const TimeDialog = ({ date, schedule, onSave, onClose }: TimeDialogProps) => {
+const TimeDialog = ({ date, schedule, onSave, onDelete, onClose }: TimeDialogProps) => {
   const [slots, setSlots] = useState<Slot[]>(schedule?.slots ?? [emptySlot()])
   const [error, setError] = useState('')
 
@@ -237,6 +234,19 @@ const TimeDialog = ({ date, schedule, onSave, onClose }: TimeDialogProps) => {
         <Button onClick={handleRegister} className="rounded-sm bg-m-blue hover:bg-m-hover-blue">
           登録する
         </Button>
+
+        {schedule && (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              onDelete()
+              onClose()
+            }}
+            className="rounded-sm text-m-red hover:bg-m-red/10 hover:text-m-red"
+          >
+            この日の予定を削除する
+          </Button>
+        )}
       </DialogContent>
     </Dialog>
   )
