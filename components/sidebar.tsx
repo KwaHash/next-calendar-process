@@ -6,9 +6,14 @@ import { RiLogoutCircleRLine } from 'react-icons/ri'
 
 const menues = [
   {
-    label: '翻訳',
+    label: '日本語 → ポルトガル語',
     icon: <MdGTranslate />,
-    link: '/translate',
+    link: '/ja-pt',
+  },
+  {
+    label: 'ポルトガル語 → 日本語',
+    icon: <MdGTranslate />,
+    link: '/pt-ja',
   },
   {
     label: 'スケジュール',
