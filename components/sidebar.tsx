@@ -15,12 +15,12 @@ const menues = [
     link: '/ja-pt',
   },
   {
-    label: 'ポルトガル語 → 日本語',
+    label: 'Português → Japonês',
     icon: <MdGTranslate />,
     link: '/pt-ja',
   },
   {
-    label: 'スケジュール',
+    label: 'agendar (スケジュール)',
     icon: <FaCalendarAlt />,
     link: '/schedule',
   },

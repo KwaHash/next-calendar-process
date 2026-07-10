@@ -111,7 +111,7 @@ const Calendar = () => {
             onClick={() => translateAll('ja')}
             className="h-8 rounded-sm px-3 text-xs"
           >
-            ポルトガル語 → 日本語
+            Português → Japonês
           </Button>
           {translating && <span className="text-xs text-gray-500">翻訳中...</span>}
         </div>
