@@ -33,6 +33,8 @@ const Calendar = () => {
 
   const firstWeekday = new Date(year, month - 1, 1).getDay()
   const daysInMonth = new Date(year, month, 0).getDate()
+  const monthPrefix = `${year}-${String(month).padStart(2, '0')}`
+  const hasVisible = schedules.some((s) => s.date.startsWith(monthPrefix))
 
   const changeMonth = (delta: number) => {
     const date = new Date(year, month - 1 + delta, 1)
@@ -62,25 +64,37 @@ const Calendar = () => {
     }
   }
 
-  // Translate every schedule's content into the target language at once.
-  const translateAll = async (to: 'ja' | 'pt') => {
+  // Translate the content of the currently displayed month's schedules.
+  // Requests run one at a time so a burst of concurrent streams can't truncate
+  // some translations (which left them untranslated on days with several slots).
+  const translateVisible = async (to: 'ja' | 'pt') => {
     setTranslating(true)
     try {
-      const next = await Promise.all(
-        schedules.map(async (s) => ({
-          ...s,
-          slots: await Promise.all(
-            s.slots.map(async (slot) =>
-              slot.content.trim()
-                ? { ...slot, content: await translateText(slot.content, to) }
-                : slot,
-            ),
-          ),
-        })),
-      )
+      const next: Schedule[] = []
+      for (const s of schedules) {
+        if (!s.date.startsWith(monthPrefix)) {
+          next.push(s)
+          continue
+        }
+        const slots: Slot[] = []
+        for (const slot of s.slots) {
+          const text = slot.content.trim()
+          if (!text) {
+            slots.push(slot)
+            continue
+          }
+          try {
+            const translated = await translateText(text, to)
+            // Keep the original if the translation comes back empty.
+            slots.push(translated ? { ...slot, content: translated } : slot)
+          } catch (e) {
+            console.error(e)
+            slots.push(slot) // keep original on failure, don't abort the batch
+          }
+        }
+        next.push({ ...s, slots })
+      }
       setSchedules(next)
-    } catch (e) {
-      console.error(e)
     } finally {
       setTranslating(false)
     }
@@ -98,8 +112,8 @@ const Calendar = () => {
           <Button
             type="button"
             variant="outline"
-            disabled={translating || schedules.length === 0}
-            onClick={() => translateAll('pt')}
+            disabled={translating || !hasVisible}
+            onClick={() => translateVisible('pt')}
             className="h-8 rounded-sm px-3 text-xs"
           >
             日本語 → ポルトガル語
@@ -107,8 +121,8 @@ const Calendar = () => {
           <Button
             type="button"
             variant="outline"
-            disabled={translating || schedules.length === 0}
-            onClick={() => translateAll('ja')}
+            disabled={translating || !hasVisible}
+            onClick={() => translateVisible('ja')}
             className="h-8 rounded-sm px-3 text-xs"
           >
             Português → Japonês
