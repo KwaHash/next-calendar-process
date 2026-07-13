@@ -6,7 +6,7 @@ import { TranslateRuntimeProvider, type Direction } from '@/providers/translate-
 const TranslatePage = ({ direction }: { direction: Direction }) => {
   return (
     <TranslateRuntimeProvider direction={direction}>
-      <div className='flex w-full h-screen pr-0.5 overflow-hidden'>
+      <div className='flex w-full h-[calc(100dvh-3.5rem)] md:h-screen pr-0.5 overflow-hidden'>
         <div className='absolute inset-0 opacity-[0.04]'
           style={{
             backgroundImage: 'linear-gradient(to right, #1f2937 1px, transparent 1px), linear-gradient(to bottom, #1f2937 1px, transparent 1px)',
