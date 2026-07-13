@@ -143,54 +143,57 @@ const Calendar = () => {
         </Button>
       </div>
 
-      <div className="mt-5 grid grid-cols-7 border-l border-t border-border-gray/20">
-        {WEEKDAYS.map((day, i) => (
-          <div key={day}
-            className={cn('border-b border-r border-border-gray/20 py-2 text-center text-sm font-medium', i === 0 && 'text-m-red')}
-          >
-            {day}
-          </div>
-        ))}
-
-        {Array.from({ length: firstWeekday }).map((_, i) => (
-          <div key={`empty-${i}`} className="border-b border-r border-border-gray/20" />
-        ))}
-
-        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
-          const date = toDateStr(year, month, day)
-          const schedule = schedules.find((s) => s.date === date)
-          return (
-            <div key={date} className="min-h-[92px] border-b border-r border-border-gray/20 p-2">
-              <p className="text-base font-semibold">{day}</p>
-              {schedule ? (
-                <div className="mt-1 flex flex-col gap-1">
-                  {schedule.slots.map((slot, i) => (
-                    <Button
-                      key={i}
-                      variant="ghost"
-                      onClick={() => setEditing(date)}
-                      className="h-auto w-full min-w-0 justify-start rounded-[3px] bg-[#29ac6d] px-1.5 py-1 text-[11px] font-normal leading-tight text-white hover:bg-[#29ac6d] hover:text-white hover:opacity-90"
-                    >
-                      <span className="min-w-0 flex-1 truncate text-left">
-                        <span className="font-semibold">{slot.start}</span>
-                        {slot.content ? ` ${slot.content}` : ` ~${slot.end}`}
-                      </span>
-                    </Button>
-                  ))}
-                </div>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setEditing(date)}
-                  className="mt-2 h-auto w-auto rounded-none bg-m-blue px-2 py-1 text-white hover:bg-m-hover-blue hover:text-white"
-                >
-                  <FaPlus />
-                </Button>
-              )}
+      {/* Scrolls horizontally on narrow screens so the cells stay legible */}
+      <div className="mt-5 overflow-x-auto">
+        <div className="grid min-w-[640px] grid-cols-7 border-l border-t border-border-gray/20">
+          {WEEKDAYS.map((day, i) => (
+            <div key={day}
+              className={cn('border-b border-r border-border-gray/20 py-2 text-center text-sm font-medium', i === 0 && 'text-m-red')}
+            >
+              {day}
             </div>
-          )
-        })}
+          ))}
+
+          {Array.from({ length: firstWeekday }).map((_, i) => (
+            <div key={`empty-${i}`} className="border-b border-r border-border-gray/20" />
+          ))}
+
+          {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
+            const date = toDateStr(year, month, day)
+            const schedule = schedules.find((s) => s.date === date)
+            return (
+              <div key={date} className="min-h-[92px] border-b border-r border-border-gray/20 p-2">
+                <p className="text-base font-semibold">{day}</p>
+                {schedule ? (
+                  <div className="mt-1 flex flex-col gap-1">
+                    {schedule.slots.map((slot, i) => (
+                      <Button
+                        key={i}
+                        variant="ghost"
+                        onClick={() => setEditing(date)}
+                        className="h-auto w-full min-w-0 justify-start rounded-[3px] bg-[#29ac6d] px-1.5 py-1 text-[11px] font-normal leading-tight text-white hover:bg-[#29ac6d] hover:text-white hover:opacity-90"
+                      >
+                        <span className="min-w-0 flex-1 truncate text-left">
+                          <span className="font-semibold">{slot.start}</span>
+                          {slot.content ? ` ${slot.content}` : ` ~${slot.end}`}
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setEditing(date)}
+                    className="mt-2 h-auto w-auto rounded-none bg-m-blue px-2 py-1 text-white hover:bg-m-hover-blue hover:text-white"
+                  >
+                    <FaPlus />
+                  </Button>
+                )}
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {/* {schedules.length > 0 && (
